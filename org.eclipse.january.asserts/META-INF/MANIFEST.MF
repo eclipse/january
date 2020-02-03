@@ -3,7 +3,7 @@ Bundle-ManifestVersion: 2
 Bundle-Name: Eclipse January Common Asserts (Incubation)
 Bundle-SymbolicName: org.eclipse.january.asserts;singleton:=true
 Bundle-Version: 3.0.0.qualifier
-Bundle-RequiredExecutionEnvironment: JavaSE-1.7
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ClassPath: .
 Require-Bundle: org.junit;bundle-version="[4.12.0,5.0.0)",
  org.eclipse.january;bundle-version="3.0.0"
