@@ -144,6 +144,29 @@ public abstract class LazyDatasetBase implements ILazyDataset, Serializable {
 		dirty = true;
 	}
 
+	protected void checkSliceND(SliceND slice) {
+		if (slice != null) {
+			int[] source = slice.getSourceShape();
+			boolean fail = false;
+			if (slice.isExpanded()) {
+				fail = shape.length != source.length;
+				if (!fail) {
+					for (int i = 0; i < shape.length; i++) {
+						if (shape[i] > source[i]) {
+							fail = true;
+							break;
+						}
+					}
+				}
+			} else {
+				fail = !Arrays.equals(shape, source);
+			}
+			if (fail) {
+				throw new IllegalArgumentException("Slice's shape must match dataset's shape");
+			}
+		}
+	}
+
 	/**
 	 * Find first sub-interface of (or class that directly implements) MetadataType
 	 * @param clazz
@@ -482,6 +505,7 @@ public abstract class LazyDatasetBase implements ILazyDataset, Serializable {
 					}
 				}
 				lz = lz.getSliceView(nslice);
+				shape = nslice.getShape();
 			}
 			if (lz.getSize() == oSize) {
 				nslice = slice;
@@ -497,6 +521,7 @@ public abstract class LazyDatasetBase implements ILazyDataset, Serializable {
 						throw new IllegalArgumentException("Sliceable dataset has non-unit dimension less than host!");
 					}
 				}
+				nslice.updateSourceShape(shape);
 			}
 
 			if (asView || (lz instanceof IDataset)) {

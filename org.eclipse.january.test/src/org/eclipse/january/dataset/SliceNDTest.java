@@ -11,7 +11,6 @@ package org.eclipse.january.dataset;
 
 import static org.junit.Assert.fail;
 
-import org.eclipse.january.dataset.SliceND;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -23,6 +22,14 @@ public class SliceNDTest {
 		int[] lstart;
 		int[] lstop;
 		SliceND slice;
+
+		// null dataset
+		slice = new SliceND(null);
+		Assert.assertTrue(slice.isAll());
+
+		// zero-rank dataset
+		slice = new SliceND(new int[0]);
+		Assert.assertTrue(slice.isAll());
 
 		step = new int[] {};
 		lstart = new int[] {};
@@ -1017,5 +1024,76 @@ public class SliceNDTest {
 		Assert.assertEquals(511, slice.getStart()[0]);
 		Assert.assertEquals(512, slice.getShape()[0]);
 		Assert.assertEquals(-1, slice.getStop()[0]);
+	}
+
+	@Test
+	public void testSliceWithinShape() {
+		Assert.assertTrue(SliceND.isSliceWithinShape(0, 0, 0, 1));
+
+		Assert.assertTrue(SliceND.isSliceWithinShape(5, 0, 5, 1));
+		Assert.assertTrue(SliceND.isSliceWithinShape(5, 1, 1, 1));
+		Assert.assertTrue(SliceND.isSliceWithinShape(5, 1, 5, 1));
+		Assert.assertTrue(SliceND.isSliceWithinShape(5, 4, 4, 1));
+		Assert.assertFalse(SliceND.isSliceWithinShape(5, 5, 5, 1));
+		Assert.assertFalse(SliceND.isSliceWithinShape(5, 2, 1, 1));
+
+		Assert.assertTrue(SliceND.isSliceWithinShape(5, 4, -1, -1));
+		Assert.assertTrue(SliceND.isSliceWithinShape(5, 1, 1, -1));
+		Assert.assertTrue(SliceND.isSliceWithinShape(5, 4, 0, -1));
+		Assert.assertTrue(SliceND.isSliceWithinShape(5, 4, 4, -1));
+		Assert.assertFalse(SliceND.isSliceWithinShape(5, 5, 5, -1));
+		Assert.assertFalse(SliceND.isSliceWithinShape(5, -1, -1, -1));
+		Assert.assertFalse(SliceND.isSliceWithinShape(5, 1, 2, -1));
+	}
+
+	@Test
+	public void testUpdateSourceShape() {
+		SliceND slice = new SliceND(new int[] {8, 4}, new int[] {6 , 1}, new int[] {2, 4}, new int[] {-3, 1});
+
+		slice.updateSourceShape(13, 4);
+
+		slice.updateSourceShape(8, 6);
+
+		try {
+			slice.updateSourceShape(8, 3);
+			fail();
+		} catch (IllegalArgumentException e) {
+			System.out.println("As expected: " + e);
+		}
+
+		try {
+			slice.updateSourceShape(3, 4);
+			fail();
+		} catch (IllegalArgumentException e) {
+			System.out.println("As expected: " + e);
+		}
+
+		try {
+			slice.updateSourceShape(1, 4);
+			fail();
+		} catch (IllegalArgumentException e) {
+			System.out.println("As expected: " + e);
+		}
+
+		try {
+			slice.updateSourceShape(3);
+			fail();
+		} catch (IllegalArgumentException e) {
+			System.out.println("As expected: " + e);
+		}
+
+		try {
+			slice.updateSourceShape();
+			fail();
+		} catch (IllegalArgumentException e) {
+			System.out.println("As expected: " + e);
+		}
+
+		try {
+			slice.updateSourceShape(null);
+			fail();
+		} catch (IllegalArgumentException e) {
+			System.out.println("As expected: " + e);
+		}
 	}
 }

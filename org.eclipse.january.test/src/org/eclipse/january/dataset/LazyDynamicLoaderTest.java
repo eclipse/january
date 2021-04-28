@@ -133,15 +133,16 @@ public class LazyDynamicLoaderTest {
 		IDataset data;
 		SliceNDIterator iterator;
 		boolean hasNext = true;
+		private int[] dShape;
 		
 		LazyDynamicTestLoader(IDataset data, int detectorRank) {
 			this.data = data;
-			this.currentShape = determineInitialShape(data.getShape(), detectorRank);
+			this.dShape = data.getShape();
+			this.currentShape = determineInitialShape(dShape, detectorRank);
 			int[] axes = new int[detectorRank];
 			for (int i = 0; i < detectorRank; i++) axes[i] = data.getRank()-1-i;
-			iterator = new SliceNDIterator(new SliceND(data.getShape()), axes);
+			iterator = new SliceNDIterator(new SliceND(dShape), axes);
 			iterator.hasNext();
-			
 		}
 		
 		@Override
@@ -160,7 +161,9 @@ public class LazyDynamicLoaderTest {
 
 		@Override
 		public IDataset getDataset(IMonitor mon, SliceND slice) throws IOException {
-			return data.getSlice(slice);
+			SliceND nSlice = slice.clone();
+			nSlice.updateSourceShape(dShape);
+			return data.getSlice(nSlice);
 		}
 		
 	}

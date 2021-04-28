@@ -1120,6 +1120,31 @@ public class AbstractDatasetTest {
 		while (is.hasNext() && it.hasNext()) {
 			assertEquals(s.getElementLongAbs(is.index), t.getElementLongAbs(it.index));
 		}
+
+		// test input SliceND checking
+		try {
+			a.getSlice(new SliceND(null));
+			fail();
+		} catch (IllegalArgumentException e) {
+			System.out.println("As expected: " + e);
+		}
+
+		try {
+			a.getSlice(new SliceND(new int[0]));
+			fail();
+		} catch (IllegalArgumentException e) {
+			System.out.println("As expected: " + e);
+		}
+
+		try {
+			a.getSlice(new SliceND(new int[2]));
+			fail();
+		} catch (IllegalArgumentException e) {
+			System.out.println("As expected: " + e);
+		}
+
+		s = a.getSlice(new SliceND(a.getShape()));
+		Assert.assertEquals("Full slice", a, s);
 	}
 
 	@Test
@@ -1165,6 +1190,32 @@ public class AbstractDatasetTest {
 		b = a.getSliceView();
 		b.setShape(1);
 		assertTrue(b.getIterator().hasNext());
+
+		// test input SliceND checking
+		a = DatasetFactory.createRange(60).reshape(6, 10);
+		try {
+			a.getSliceView(new SliceND(null));
+			fail();
+		} catch (IllegalArgumentException e) {
+			System.out.println("As expected: " + e);
+		}
+
+		try {
+			a.getSliceView(new SliceND(new int[0]));
+			fail();
+		} catch (IllegalArgumentException e) {
+			System.out.println("As expected: " + e);
+		}
+
+		try {
+			a.getSliceView(new SliceND(new int[2]));
+			fail();
+		} catch (IllegalArgumentException e) {
+			System.out.println("As expected: " + e);
+		}
+
+		b = a.getSliceView(new SliceND(a.getShape()));
+		Assert.assertEquals("Full slice", a, b);
 	}
 
 	private Dataset checkSliceView(Dataset a, int[] start, int[] stop, int[] step) {
@@ -1519,7 +1570,7 @@ public class AbstractDatasetTest {
 		assertEquals("MinPos", 0, a.minPos().length);
 		assertEquals("ArgMax", 0, a.argMax());
 		assertEquals("ArgMin", 0, a.argMin());
-		assertEquals("Value", true, a.equals(Double.valueOf(1.0)));
+		assertTrue("Value",  a.equals(Double.valueOf(1.0)));
 
 		a = DatasetFactory.zeros(ShortDataset.class);
 		assertEquals("Rank", 0, a.getRank());

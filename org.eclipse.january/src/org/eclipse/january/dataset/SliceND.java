@@ -250,6 +250,9 @@ public class SliceND {
 	 *            Slice step
 	 */
 	private void internalSetSlice(int i, Integer start, Integer stop, int step) {
+		if (oshape == null) {
+			throw new IllegalArgumentException("Cannot set slice on null dataset");
+		}
 		if (step == 0) {
 			throw new IllegalArgumentException("Step size must not be zero");
 		}
@@ -422,6 +425,50 @@ public class SliceND {
 	}
 
 	/**
+	 * Update source shape (for use with dynamic datasets
+	 * @param shape
+	 * @since 2.3
+	 */
+	public void updateSourceShape(int... shape) {
+		if (shape != null) {
+			if (oshape != null) {
+				if (shape.length != oshape.length) {
+					throw new IllegalArgumentException("Updated source shape must have same rank");
+				}
+				for (int i = 0; i < shape.length; i++) {
+					int s = shape[i];
+					if (!isSliceWithinShape(s, lstart[i], lstop[i], lstep[i])) {
+						throw new IllegalArgumentException("Updated source shape must be outside latest slice");
+					}
+				}
+				System.arraycopy(shape, 0, oshape, 0, shape.length);
+			} else {
+				throw new IllegalArgumentException("Cannot update null source shape with non-null");
+			}
+		} else if (oshape != null) {
+			throw new IllegalArgumentException("Cannot update non-null source shape with null");
+		}
+	}
+
+	/**
+	 * Check slice configure
+	 * @param l length of dimension
+	 * @param b beginning
+	 * @param e end
+	 * @param d delta
+	 * @return true if okay
+	 */
+	static boolean isSliceWithinShape(int l, int b, int e, int d) {
+		if (l == 0) {
+			return b == 0 && e == 0;
+		}
+		if (d > 0) {
+			return b >= 0 && b <= e && b < l && e <= l;
+		}
+		return b >= 0 && b >= e && b < l && e >= -1;
+	}
+
+	/**
 	 * Returns {@code true} if all of originals shapes are covered by positive
 	 * steps slices, else {@code false}.
 	 * 
@@ -433,7 +480,11 @@ public class SliceND {
 			return false;
 		}
 
-		boolean allData = Arrays.equals(oshape, getShape());
+		if (oshape == null) {
+			return true;
+		}
+
+		boolean allData = Arrays.equals(oshape, lshape);
 		if (allData) {
 			for (int i = 0; i < lshape.length; i++) {
 				if (lstep[i] < 0) {
@@ -454,6 +505,10 @@ public class SliceND {
 	 *            dimension to flip
 	 */
 	public SliceND flip(int i) {
+		if (lshape == null) {
+			return this;
+		}
+
 		i = ShapeUtils.checkAxis(lshape.length, i);
 
 		int beg = lstart[i];
@@ -475,6 +530,9 @@ public class SliceND {
 	 * finishes are at the previous start point.
 	 */
 	public SliceND flip() {
+		if (lshape == null) {
+			return this;
+		}
 		int orank = lshape.length;
 		for (int i = 0; i < orank; i++) {
 			flip(i);
@@ -489,6 +547,10 @@ public class SliceND {
 	 * @return a Slice array
 	 */
 	public Slice[] convertToSlice() {
+		if (lshape == null) {
+			return null;
+		}
+
 		int orank = lshape.length;
 
 		Slice[] slice = new Slice[orank];

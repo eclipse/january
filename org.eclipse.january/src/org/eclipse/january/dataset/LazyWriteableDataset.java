@@ -171,7 +171,7 @@ public class LazyWriteableDataset extends LazyDynamicDataset implements ILazyWri
 				if (slice.isExpanded()) {
 					Dataset od = d;
 					d = DatasetFactory.zeros(od.getClass(), slice.getSourceShape());
-					d.setSlice(od, SliceND.createSlice(od, null, null));
+					d.setSlice(od, SliceND.createSlice(d, null, od.getShapeRef()));
 				}
 				d.setSlice(data, slice);
 			}
@@ -281,11 +281,13 @@ public class LazyWriteableDataset extends LazyDynamicDataset implements ILazyWri
 
 	@Override
 	public void setSlice(IMonitor monitor, IDataset data, SliceND slice) throws DatasetException {
+		checkSliceND(slice);
 		internalSetSlice(monitor, writeAsync, data, slice);
 	}
 
 	@Override
 	public void setSliceSync(IMonitor monitor, IDataset data, SliceND slice) throws DatasetException {
+		checkSliceND(slice);
 		internalSetSlice(monitor, false, data, slice);
 	}
 

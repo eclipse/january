@@ -9,6 +9,8 @@
 
 package org.eclipse.january.dataset;
 
+import static org.junit.Assert.fail;
+
 import java.util.Arrays;
 import java.util.Comparator;
 
@@ -125,6 +127,31 @@ public class LazyDatasetTest {
 		slice = new Slice[]{null, null, null, new Slice(null, null, -1)};
 		nd = ld.getSlice(slice);
 		Assert.assertEquals("Full negative slice", d.getSlice(slice), nd);
+
+		// test input SliceND checking
+		try {
+			ld.getSlice(new SliceND(null));
+			fail();
+		} catch (IllegalArgumentException e) {
+			System.out.println("As expected: " + e);
+		}
+
+		try {
+			ld.getSlice(new SliceND(new int[0]));
+			fail();
+		} catch (IllegalArgumentException e) {
+			System.out.println("As expected: " + e);
+		}
+
+		try {
+			ld.getSlice(new SliceND(new int[2]));
+			fail();
+		} catch (IllegalArgumentException e) {
+			System.out.println("As expected: " + e);
+		}
+
+		nd = ld.getSlice(new SliceND(ld.getShape()));
+		Assert.assertEquals("Full slice", d.getSlice(), nd);
 	}
 
 	@Test
@@ -161,6 +188,31 @@ public class LazyDatasetTest {
 		slice = new Slice[]{null, null, null, new Slice(null, null, -1)};
 		l = ld.getSliceView(slice);
 		Assert.assertEquals("Full negative slice", d.getSlice(slice), l.getSlice());
+
+		// test input SliceND checking
+		try {
+			ld.getSliceView(new SliceND(null));
+			fail();
+		} catch (IllegalArgumentException e) {
+			System.out.println("As expected: " + e);
+		}
+
+		try {
+			ld.getSliceView(new SliceND(new int[0]));
+			fail();
+		} catch (IllegalArgumentException e) {
+			System.out.println("As expected: " + e);
+		}
+
+		try {
+			ld.getSliceView(new SliceND(new int[2]));
+			fail();
+		} catch (IllegalArgumentException e) {
+			System.out.println("As expected: " + e);
+		}
+
+		l = ld.getSliceView(new SliceND(ld.getShape()));
+		Assert.assertEquals("Full slice", d, l.getSlice());
 	}
 
 	@Test

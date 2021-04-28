@@ -319,9 +319,9 @@ public class LazyDataset extends LazyDatasetBase implements Serializable, Clonea
 	@Override
 	public Dataset getSlice(Slice... slice) throws DatasetException {
 		if (slice == null || slice.length == 0) {
-			return getSlice(null, new SliceND(shape));
+			return internalGetSlice(null, new SliceND(shape));
 		}
-		return getSlice(null, new SliceND(shape, slice));
+		return internalGetSlice(null, new SliceND(shape, slice));
 	}
 
 	@Override
@@ -332,9 +332,9 @@ public class LazyDataset extends LazyDatasetBase implements Serializable, Clonea
 	@Override
 	public Dataset getSlice(IMonitor monitor, Slice... slice) throws DatasetException {
 		if (slice == null || slice.length == 0) {
-			return getSlice(monitor, new SliceND(shape));
+			return internalGetSlice(monitor, new SliceND(shape));
 		}
-		return getSlice(monitor, new SliceND(shape, slice));
+		return internalGetSlice(monitor, new SliceND(shape, slice));
 	}
 
 	@Override
@@ -365,11 +365,16 @@ public class LazyDataset extends LazyDatasetBase implements Serializable, Clonea
 
 	@Override
 	public LazyDataset getSliceView(int[] start, int[] stop, int[] step) {
-		return getSliceView(new SliceND(shape, start, stop, step));
+		return internalGetSliceView(new SliceND(shape, start, stop, step));
 	}
 
 	@Override
 	public LazyDataset getSliceView(SliceND slice) {
+		checkSliceND(slice);
+		return internalGetSliceView(slice);
+	}
+
+	protected LazyDataset internalGetSliceView(SliceND slice) {
 		LazyDataset view = clone();
 		if (slice.isAll()) {
 			return view;
@@ -391,11 +396,17 @@ public class LazyDataset extends LazyDatasetBase implements Serializable, Clonea
 
 	@Override
 	public Dataset getSlice(IMonitor monitor, int[] start, int[] stop, int[] step) throws DatasetException {
-		return getSlice(monitor, new SliceND(shape, start, stop, step));
+		return internalGetSlice(monitor, new SliceND(shape, start, stop, step));
 	}
 
 	@Override
 	public Dataset getSlice(IMonitor monitor, SliceND slice) throws DatasetException {
+		checkSliceND(slice);
+
+		return internalGetSlice(monitor, slice);
+	}
+
+	protected Dataset internalGetSlice(IMonitor monitor, SliceND slice) throws DatasetException {
 		if (loader != null && !loader.isFileReadable()) {
 			return null;
 		}
