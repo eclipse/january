@@ -2452,4 +2452,32 @@ public class MathsTest {
 		TestUtils.assertDatasetEquals(Maths.clip(c, 0.2, 15), Maths.lowerClip(c, 0.2));
 		TestUtils.assertDatasetEquals(Maths.clip(c, 0.21, 15), Maths.lowerClip(c, 0.21));
 	}
+
+	@Test
+	public void testDerivativeOnSliceViews() {
+		Dataset x = Random.rand(60).sort(null);
+		Dataset y = Random.rand(60);
+
+		testDerivativeOnSliceViews(x, y, null);
+		testDerivativeOnSliceViews(x, y, new Slice(15));
+		testDerivativeOnSliceViews(x, y, new Slice(2, null));
+		testDerivativeOnSliceViews(x, y, new Slice(2, null, 3));
+		testDerivativeOnSliceViews(x, y, new Slice(2, 15));
+		testDerivativeOnSliceViews(x, y, new Slice(15, null, -2));
+
+		x.setShape(20, 3);
+		y.setShape(x.getShapeRef());
+		x = DatasetUtils.createCompoundDatasetFromLastAxis(x, true);
+		y = DatasetUtils.createCompoundDatasetFromLastAxis(y, true);
+		testDerivativeOnSliceViews(x, y, null);
+		testDerivativeOnSliceViews(x, y, new Slice(15));
+		testDerivativeOnSliceViews(x, y, new Slice(2, null));
+		testDerivativeOnSliceViews(x, y, new Slice(2, null, 3));
+		testDerivativeOnSliceViews(x, y, new Slice(2, 15));
+		testDerivativeOnSliceViews(x, y, new Slice(15, null, -2));
+	}
+
+	private void testDerivativeOnSliceViews(Dataset x, Dataset y, Slice s) {
+		TestUtils.assertDatasetEquals(Maths.derivative(x.getSlice(s), y.getSlice(s), 2), Maths.derivative(x.getSlice(s), y.getSliceView(s), 2));
+	}
 }

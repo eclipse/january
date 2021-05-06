@@ -2723,51 +2723,37 @@ class MathsPreface {
 		return ds;
 	}
 
-	private static double SelectedMean(Dataset data, int Min, int Max) {
-
+	private static double selectedMean(Dataset data, int min, int max) {
 		double result = 0.0;
-		for (int i = Min, imax = data.getSize(); i <= Max; i++) {
+		for (int i = min, end = data.getSize() - 1; i <= max; i++) {
 			// clip i appropriately, imagine that effectively the two ends
-			// continue
-			// straight out.
-			int pos = i;
-			if (pos < 0) {
-				pos = 0;
-			} else if (pos >= imax) {
-				pos = imax - 1;
-			}
-			result += data.getElementDoubleAbs(pos);
+			// continue straight out.
+			int pos = Math.min(Math.max(0, i), end);
+			result += data.getDouble(pos);
 		}
 
 		// now the sum is complete, average the values.
-		result /= (Max - Min) + 1;
+		result /= (max - min) + 1;
 		return result;
 	}
 
-	private static void SelectedMeanArray(double[] out, Dataset data, int Min, int Max) {
+	private static void selectedMeanArray(double[] out, Dataset data, int min, int max) {
+		Arrays.fill(out, 0);
 		final int isize = out.length;
-		for (int j = 0; j < isize; j++)
-			out[j] = 0.;
-
-		for (int i = Min, imax = data.getSize(); i <= Max; i++) {
+		for (int i = min, end = data.getSize() - 1; i <= max; i++) {
 			// clip i appropriately, imagine that effectively the two ends
-			// continue
-			// straight out.
-			int pos = i * isize;
-			if (pos < 0) {
-				pos = 0;
-			} else if (pos >= imax) {
-				pos = imax - isize;
+			// continue straight out.
+			int off = data.get1DIndex(Math.min(Math.max(0, i), end));
+			for (int j = 0; j < isize; j++) {
+				out[j] += data.getElementDoubleAbs(off++);
 			}
-			for (int j = 0; j < isize; j++)
-				out[j] += data.getElementDoubleAbs(pos + j);
 		}
 
 		// now the sum is complete, average the values.
-		double norm = 1. / (Max - Min + 1.);
-		for (int j = 0; j < isize; j++)
+		double norm = 1. / (max - min + 1.);
+		for (int j = 0; j < isize; j++) {
 			out[j] *= norm;
-
+		}
 	}
 
 	/**
@@ -2821,10 +2807,10 @@ class MathsPreface {
 		final int isize = y.getElementsPerItem();
 		if (isize == 1) {
 			for (int i = 0, imax = x.getSize(); i < imax; i++) {
-				double LeftValue = SelectedMean(y, i - n, i - 1);
-				double RightValue = SelectedMean(y, i + 1, i + n);
-				double LeftPosition = SelectedMean(x, i - n, i - 1);
-				double RightPosition = SelectedMean(x, i + 1, i + n);
+				double LeftValue = selectedMean(y, i - n, i - 1);
+				double RightValue = selectedMean(y, i + 1, i + n);
+				double LeftPosition = selectedMean(x, i - n, i - 1);
+				double RightPosition = selectedMean(x, i + 1, i + n);
 
 				// now the values and positions are calculated, the derivative
 				// can be
@@ -2835,10 +2821,10 @@ class MathsPreface {
 			double[] leftValues = new double[isize];
 			double[] rightValues = new double[isize];
 			for (int i = 0, imax = x.getSize(); i < imax; i++) {
-				SelectedMeanArray(leftValues, y, i - n, i - 1);
-				SelectedMeanArray(rightValues, y, i + 1, i + n);
-				double delta = SelectedMean(x, i - n, i - 1);
-				delta = 1. / (SelectedMean(x, i + 1, i + n) - delta);
+				selectedMeanArray(leftValues, y, i - n, i - 1);
+				selectedMeanArray(rightValues, y, i + 1, i + n);
+				double delta = selectedMean(x, i - n, i - 1);
+				delta = 1. / (selectedMean(x, i + 1, i + n) - delta);
 				for (int j = 0; j < isize; j++) {
 					rightValues[j] -= leftValues[j];
 					rightValues[j] *= delta;
